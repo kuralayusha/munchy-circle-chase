@@ -1,41 +1,45 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useKeyPress } from '../hooks/useKeyPress';
+import React, { useState, useEffect, useCallback } from "react";
+import { useKeyPress } from "../hooks/useKeyPress";
 
 // Game constants (easily adjustable)
 const GAME_WIDTH = 1200;
 const GAME_HEIGHT = 800;
-const INITIAL_PLAYER_SIZE = 2;
-const FOOD_SIZE = 1;
-const GROWTH_RATE = 1;
-const MOVE_SPEED = 5;
-const WINNING_SCORE = 700;
+const INITIAL_PLAYER_SIZE = 10;
+const FOOD_SIZE = 5;
+const GROWTH_RATE = 5;
+const MOVE_SPEED = 3;
+const WINNING_SCORE = 100;
 
 const GameArea = () => {
-  const [playerPos, setPlayerPos] = useState({ x: GAME_WIDTH / 2, y: GAME_HEIGHT / 2 });
+  const [playerPos, setPlayerPos] = useState({
+    x: GAME_WIDTH / 2,
+    y: GAME_HEIGHT / 2,
+  });
   const [playerSize, setPlayerSize] = useState(INITIAL_PLAYER_SIZE);
   const [food, setFood] = useState([]);
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
 
-  const wPressed = useKeyPress('w');
-  const aPressed = useKeyPress('a');
-  const sPressed = useKeyPress('s');
-  const dPressed = useKeyPress('d');
+  const wPressed = useKeyPress("w");
+  const aPressed = useKeyPress("a");
+  const sPressed = useKeyPress("s");
+  const dPressed = useKeyPress("d");
 
   const spawnFood = useCallback(() => {
     const newFood = {
       x: Math.random() * (GAME_WIDTH - FOOD_SIZE),
       y: Math.random() * (GAME_HEIGHT - FOOD_SIZE),
     };
-    setFood(prevFood => [...prevFood, newFood]);
+    setFood((prevFood) => [...prevFood, newFood]);
   }, []);
 
   const movePlayer = useCallback(() => {
-    setPlayerPos(prev => {
+    setPlayerPos((prev) => {
       let newX = prev.x;
       let newY = prev.y;
       if (wPressed) newY = Math.max(0, newY - MOVE_SPEED);
-      if (sPressed) newY = Math.min(GAME_HEIGHT - playerSize, newY + MOVE_SPEED);
+      if (sPressed)
+        newY = Math.min(GAME_HEIGHT - playerSize, newY + MOVE_SPEED);
       if (aPressed) newX = Math.max(0, newX - MOVE_SPEED);
       if (dPressed) newX = Math.min(GAME_WIDTH - playerSize, newX + MOVE_SPEED);
       return { x: newX, y: newY };
@@ -44,17 +48,19 @@ const GameArea = () => {
 
   const checkCollision = useCallback(() => {
     const playerRadius = playerSize / 2;
-    setFood(prevFood => prevFood.filter(f => {
-      const dx = f.x - (playerPos.x + playerRadius);
-      const dy = f.y - (playerPos.y + playerRadius);
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance < playerRadius + FOOD_SIZE / 2) {
-        setScore(prev => prev + 1);
-        setPlayerSize(prev => prev + GROWTH_RATE);
-        return false;
-      }
-      return true;
-    }));
+    setFood((prevFood) =>
+      prevFood.filter((f) => {
+        const dx = f.x - (playerPos.x + playerRadius);
+        const dy = f.y - (playerPos.y + playerRadius);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < playerRadius + FOOD_SIZE / 2) {
+          setScore((prev) => prev + 1);
+          setPlayerSize((prev) => prev + GROWTH_RATE);
+          return false;
+        }
+        return true;
+      })
+    );
   }, [playerPos, playerSize]);
 
   useEffect(() => {
@@ -76,7 +82,14 @@ const GameArea = () => {
   }, [movePlayer, checkCollision, spawnFood, gameOver]);
 
   return (
-    <div className="relative" style={{ width: GAME_WIDTH, height: GAME_HEIGHT, border: '1px solid black' }}>
+    <div
+      className="relative"
+      style={{
+        width: GAME_WIDTH,
+        height: GAME_HEIGHT,
+        border: "1px solid black",
+      }}
+    >
       {food.map((f, index) => (
         <div
           key={index}
